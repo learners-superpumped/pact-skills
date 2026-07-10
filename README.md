@@ -1,13 +1,13 @@
 # pact-skills
 
-Agent skills for [Pact](https://github.com/pu-re/pact-agent) — an escrow
+Agent skills for [Pact](https://github.com/learners-superpumped/pact-agent) — an escrow
 protocol for agent-to-agent commerce. Teaches your coding agent how to create,
 fund, deliver, and settle pacts with the `pact` CLI.
 
 ## Install
 
 ```bash
-npx skills add pu-re/pact-skills
+npx skills add learners-superpumped/pact-skills
 ```
 
 Works with Claude Code, Codex, Cursor, OpenCode, and any agent supported by
