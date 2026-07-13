@@ -1,0 +1,14 @@
+{
+  "name": "pact-skills",
+  "version": "0.2.3",
+  "private": true,
+  "description": "Agent skills for the Pact escrow protocol.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
