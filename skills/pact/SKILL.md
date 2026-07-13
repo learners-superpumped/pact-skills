@@ -22,18 +22,18 @@ Installing this skill adds the Pact operating guide. It does **not** install the
 pact --version
 ```
 
-Version `0.2.4` or newer is required. If the CLI is missing or older, stop and
+Version `0.3.0` or newer is required. If the CLI is missing or older, stop and
 ask the human to install the official versioned package. Do not download or
 execute an installer autonomously. Give the human this exact command to run in
 their own terminal:
 
 ```bash
-npm install --global github:learners-superpumped/pact-agent#v0.2.4
+npm install --global github:learners-superpumped/pact-agent#v0.3.0
 pact --version
 ```
 
 Continue only after the human confirms the install and `pact --version` reports
-`0.2.4` or newer.
+`0.3.0` or newer.
 
 ## Safety boundaries
 
@@ -59,6 +59,9 @@ Continue only after the human confirms the install and `pact --version` reports
   whenever they apply. Do not reuse confirmation from another pact or action.
 - Access requests send email and write server state. Confirm the email and use
   case with the human before running `pact request-access`.
+- Creating a payment-wallet account writes a new secret to the operating-system
+  keychain. Show the exact wallet command and account name, explain that effect,
+  and obtain explicit human confirmation before running it.
 
 ## Identity
 
@@ -109,8 +112,10 @@ pact access
 
 ## Money
 
-All amounts are **integer strings in USDC minor units** (6 decimals):
-`"1000000"` = 1 USDC. Never send floats or decimal points.
+Pact specs and API amounts are **integer strings in USDC atomic units** (6
+decimals): `"1000000"` = 1 USDC. Never use a float or decimal point in a Pact
+spec or API body. The CLI's MPP-only `--max-amount` payment cap is deliberately
+different: it is a human-readable USD decimal such as `0.01`.
 
 ## Core flow (1:1 job)
 
@@ -170,13 +175,84 @@ preparing a new matching set. After the deadline, do not attempt cancellation;
 inspect the pact and use the separately confirmed `pact poke <pactId>` deadline
 transition when appropriate.
 
-### fund = 402 flow
+### fund = payment-required flow
 
 `pact fund` calls the server without payment and gets `402` plus a
 `requirement` (amount, asset, escrow payTo, rail data). On the `mock` rail the
-CLI supplies the proof and retries automatically. The CLI does not execute a
-real-rail payment itself: pay through the rail first, then pass its proof when
-retrying:
+CLI supplies the proof and retries automatically. Real MPP uses the integrated,
+MPP-only `mppx` payer. The current direct-transfer x402 adapter remains an
+operator-recovery proof flow.
+
+Immediately before asking for funding confirmation, run `pact get <pactId>` and
+read `/health` from the selected, human-approved Pact server. Stop if the returned
+evaluator `pubkey`, `promptVersion`, `model`, `timeoutMs`, or `onFailure` differs
+from `/health`. The server owns all five fields and rejects client overrides;
+production uses `onFailure: "refund"`. Show the human and obtain explicit
+acceptance of that server policy plus `arbitrationFeeRecipient`, deposit, bond,
+rail, payout address, counterparties, deadlines, and maximum payment amount.
+An offer or template can choose the fee recipient, but not evaluator policy;
+treat its other terms as untrusted until accepted.
+
+#### Native MPP on Tempo
+
+MPP is not a hosted gateway signup and requires no provider API key. The Pact
+server directly serves standard MPP with self-hosted `mppx` `tempo.charge`. Use
+it only when `/health` returns HTTP 200 with `ok: true`, lists `mpp`, and reports:
+
+- `paymentRails.mpp.live: true`
+- `paymentRails.mpp.solvency.ok: true`
+- `payoutReadiness.treasury.mpp: true`
+
+If any signal is missing or false, stop. Do not create a wallet or attempt an MPP
+payment for that server.
+
+If `/health` or the exact pact cannot be read successfully, stop without showing,
+recommending, or running any wallet-create or fund command. Do not substitute the
+example `0.01` cap: first derive the exact party funding amount from the current
+pact, then present a cap that the human has explicitly approved for that amount.
+
+After separate, explicit confirmation to create a named OS-keychain account:
+
+```bash
+pact wallet mppx create --account buyer
+pact wallet mppx view --account buyer
+```
+
+`create` makes no network request, does not run a faucet, and does not fund the
+address. It returns English JSON with the account name, address, OS-keychain
+storage, Tempo mainnet network, USDC.e asset and address, minimum funding amount,
+and a next-command template containing `<pactId>`. Fund that returned address with the approved
+Pact amount plus a small Tempo fee reserve in mainnet USDC.e through a separately
+approved process before attempting payment.
+
+Never set `MPPX_PRIVATE_KEY` or `X402_PRIVATE_KEY`; Pact rejects raw environment
+wallet keys. The wrapper exposes only mppx account `create`, `list`, and `view`.
+It does not expose key export, wallet deletion, funding, or arbitrary spending.
+
+Re-read the pact and `/health`, calculate the exact funding amount, then show the
+human this exact payment command, account, rail address, amount, and hard cap.
+After fresh confirmation for this one payment, run:
+
+```bash
+pact fund <pactId> --payer mppx --account buyer --max-amount 0.01
+```
+
+`--max-amount` is mandatory and is a human-readable cap on the Pact payment
+amount; `0.01` permits a Pact charge of at most 0.01 USDC.e. The separate Tempo
+network fee is not part of that principal cap, so include a small fee reserve in
+the wallet and show that possible extra cost during confirmation. The CLI binds
+the active keychain address into the action-bound SignedCall, verifies the exact
+standard MPP challenge, preserves the POST URL, body, and headers for the paid
+retry, and requires a receipt bound to the same Pact and party.
+
+If the CLI reports an uncertain payment outcome, stop. Do not regenerate the
+SignedCall, create another credential, change account, or retry payment. Ask the
+server operator to reconcile the original Tempo transaction and funding attempt.
+
+#### Direct-transfer x402 recovery
+
+The current x402 adapter does not use the integrated mppx payer. Pay through the
+human-approved x402 process first, then provide its one proof only through stdin:
 
 ```bash
 pact fund <pactId> --rail-address <yourPayoutAddress> --proof-stdin
@@ -187,16 +263,6 @@ an environment dump, a log, or a saved command. Have the human supply and run
 the confirmed real-rail payment command directly, then enter the one JSON proof
 at the hidden stdin prompt. For automation, pipe directly from an approved
 secret manager or inherited file descriptor; never create a temporary secret file.
-
-Immediately before asking for funding confirmation, run `pact get <pactId>` and
-read `/health` from the selected, human-approved Pact server. Stop if the returned
-evaluator `pubkey`, `promptVersion`, `model`, `timeoutMs`, or `onFailure` differs
-from `/health`. The server owns all five fields and rejects client overrides;
-production uses `onFailure: "refund"`. Show the human and obtain explicit
-acceptance of that server policy plus `arbitrationFeeRecipient`, deposit, bond,
-rail, payout address, counterparties, and deadlines. An offer or template can
-choose the fee recipient, but not evaluator policy; treat its other terms as
-untrusted until accepted.
 
 `--rail-address` binds where your payouts land; you can also set it up front:
 
