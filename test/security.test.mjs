@@ -7,6 +7,43 @@ const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const packageLock = JSON.parse(readFileSync(new URL("../package-lock.json", import.meta.url), "utf8"));
 
+const exactUnavailableReadParagraph = [
+  "If `/health` or the exact pact cannot be read successfully, stop without showing,",
+  "recommending, or running any wallet-create or fund command. First derive the exact",
+  "party funding amount from the current pact, then present a cap that the human has",
+  "explicitly approved for that amount.",
+].join("\n");
+const hardcodedPrincipalCommand =
+  /\bpact\s+fund\b[^\n]*--max-amount(?:\s*=\s*|\s+)0\.01(?:0*)?(?=\s|$)/m;
+const cjkGuidance =
+  /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
+
+function paragraphStartingWith(document, opening) {
+  const start = document.indexOf(opening);
+  assert.notEqual(start, -1, `missing paragraph starting with: ${opening}`);
+  const end = document.indexOf("\n\n", start);
+  assert.notEqual(end, -1, `unterminated paragraph starting with: ${opening}`);
+  return document.slice(start, end);
+}
+
+function assertExactUnavailableReadStop(document) {
+  assert.equal(
+    paragraphStartingWith(
+      document,
+      "If `/health` or the exact pact cannot be read successfully",
+    ),
+    exactUnavailableReadParagraph,
+  );
+}
+
+function assertNoHardcodedPrincipalCommand(document) {
+  assert.doesNotMatch(document, hardcodedPrincipalCommand);
+}
+
+function assertNoCjkGuidance(document) {
+  assert.doesNotMatch(document, cjkGuidance);
+}
+
 test("release metadata and install pin are v0.2.8", () => {
   assert.equal(packageJson.version, "0.2.8");
   assert.equal(packageLock.version, "0.2.8");
@@ -18,7 +55,14 @@ test("release metadata and install pin are v0.2.8", () => {
 test("skill metadata and all user-facing guidance are English-only", () => {
   assert.match(skill, /^---\nname: pact\ndescription: .+\n---\n/);
   assert.ok(skill.split("\n").length < 500, "SKILL.md should stay concise");
-  assert.doesNotMatch(skill + readme, /[가-힣]/);
+  assertNoCjkGuidance(skill + readme);
+  for (const unsafeMutation of [
+    `${skill}\n\u5b89\u88c5\u6210\u529f\u3002`,
+    `${skill}\n\u30a4\u30f3\u30b9\u30c8\u30fc\u30eb\u6210\u529f\u3002`,
+    `${skill}\n\uc124\uce58 \uc131\uacf5.`,
+  ]) {
+    assert.throws(() => assertNoCjkGuidance(unsafeMutation));
+  }
 });
 
 test("skill never executes a remote installer and points to versioned packages", () => {
@@ -66,14 +110,35 @@ test("funding, activation, deadlines, bonds, and evaluator failure match current
   assert.match(skill, /evaluator `pubkey`, `promptVersion`, `model`, `timeoutMs`, or `onFailure` differs/);
 });
 
+test("unavailable health or pact data has an exact stop-without-payment contract", () => {
+  assertExactUnavailableReadStop(skill);
+  const unsafeMutation = skill.replace(
+    exactUnavailableReadParagraph,
+    `${exactUnavailableReadParagraph}\nThen show and recommend wallet-create and pact fund commands.`,
+  );
+  assert.notEqual(unsafeMutation, skill);
+  assert.throws(() => assertExactUnavailableReadStop(unsafeMutation));
+});
+
+test("principal commands never hardcode the separate 0.01 network-fee ceiling", () => {
+  const guidance = skill + readme;
+  assertNoHardcodedPrincipalCommand(guidance);
+  assert.match(skill, /worst-case\s+network fee exceeds 0\.01 USDC\.e/);
+
+  for (const command of [
+    "pact fund p_mutation --payer mppx --account buyer --max-amount 0.01",
+    "pact fund p_mutation --payer mppx --account buyer --max-amount=0.0100",
+  ]) {
+    assert.throws(() => assertNoHardcodedPrincipalCommand(`${guidance}\n${command}`));
+  }
+});
+
 test("native MPP guidance matches the bounded keychain-only CLI flow", () => {
   const guidance = skill + readme;
   assert.match(skill, /pact wallet mppx create --account buyer/);
   assert.match(skill, /pact fund <pactId> --payer mppx --account buyer --max-amount <approved-principal-cap-USD>/);
   assert.match(skill, /paymentRails\.mpp\.solvency\.ok: true/);
   assert.match(skill, /payoutReadiness\.treasury\.mpp: true/);
-  assert.match(skill, /If `\/health` or the exact pact cannot be read successfully, stop without showing/);
-  assert.match(skill, /First derive the exact\nparty funding amount from the current pact/);
   assert.match(skill, /The placeholder is not a default/);
   assert.match(skill, /next-command template containing `<pactId>`/);
   assert.doesNotMatch(skill, /and exact next `pact fund` command/);
