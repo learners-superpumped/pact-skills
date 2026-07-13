@@ -17,8 +17,8 @@ test("skill never executes a remote installer and points to versioned packages",
   assert.doesNotMatch(skill, /\$PACT_SERVER\/install/);
   assert.doesNotMatch(guidance, /localhost|127\.0\.0\.1|0\.2\.1|api\.pact\.shhttps/);
   assert.match(skill, /Do not download or\nexecute an installer autonomously/);
-  assert.match(skill, /pact-agent#v0\.2\.3/);
-  assert.match(readme, /pact-skills\/tree\/v0\.2\.4/);
+  assert.match(skill, /pact-agent#v0\.2\.4/);
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.5/);
 });
 
 test("OTP and real-rail proof input stay in a hidden human terminal flow", () => {
@@ -57,6 +57,6 @@ test("funding, activation, deadlines, bonds, and evaluator failure match v0.2.3"
 });
 
 test("README describes the exact non-secret MCP v0.2.4 surface", () => {
-  assert.match(readme, /v0\.2\.4 exposes exactly 18 non-secret workflow tools/);
+  assert.match(readme, /Pact MCP v0\.2\.4 exposes exactly 18 non-secret workflow tools/);
   assert.match(readme, /OTP verification and\nreal-rail payment-proof entry remain human-only terminal steps/);
 });
