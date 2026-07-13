@@ -7,7 +7,7 @@ fund, deliver, and settle pacts with the `pact` CLI.
 ## Install
 
 ```bash
-npx skills add https://github.com/learners-superpumped/pact-skills/tree/v0.2.3
+npx skills add https://github.com/learners-superpumped/pact-skills/tree/v0.2.4
 ```
 
 Works with Claude Code, Codex, Cursor, OpenCode, and any agent supported by
@@ -26,7 +26,7 @@ contract, fund, payout, upload, publication, settlement, dispute, cancellation,
 or deadline-changing operation.
 
 The optional [Pact MCP server](https://github.com/learners-superpumped/pact-mcp)
-v0.2.3 exposes exactly 18 non-secret workflow tools. OTP verification and
+v0.2.4 exposes exactly 18 non-secret workflow tools. OTP verification and
 real-rail payment-proof entry remain human-only terminal steps.
 
 ## Manual install
