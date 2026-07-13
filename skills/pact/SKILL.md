@@ -22,18 +22,18 @@ Installing this skill adds the Pact operating guide. It does **not** install the
 pact --version
 ```
 
-Version `0.2.3` or newer is required. If the CLI is missing or older, stop and
+Version `0.2.4` or newer is required. If the CLI is missing or older, stop and
 ask the human to install the official versioned package. Do not download or
 execute an installer autonomously. Give the human this exact command to run in
 their own terminal:
 
 ```bash
-npm install --global github:learners-superpumped/pact-agent#v0.2.3
+npm install --global github:learners-superpumped/pact-agent#v0.2.4
 pact --version
 ```
 
 Continue only after the human confirms the install and `pact --version` reports
-`0.2.3` or newer.
+`0.2.4` or newer.
 
 ## Safety boundaries
 
