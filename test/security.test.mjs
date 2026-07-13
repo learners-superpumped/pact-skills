@@ -7,12 +7,12 @@ const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const packageLock = JSON.parse(readFileSync(new URL("../package-lock.json", import.meta.url), "utf8"));
 
-test("release metadata and install pin are v0.2.7", () => {
-  assert.equal(packageJson.version, "0.2.7");
-  assert.equal(packageLock.version, "0.2.7");
-  assert.equal(packageLock.packages[""].version, "0.2.7");
-  assert.match(readme, /pact-skills\/tree\/v0\.2\.7/);
-  assert.doesNotMatch(readme, /pact-skills\/tree\/v0\.2\.6/);
+test("release metadata and install pin are v0.2.8", () => {
+  assert.equal(packageJson.version, "0.2.8");
+  assert.equal(packageLock.version, "0.2.8");
+  assert.equal(packageLock.packages[""].version, "0.2.8");
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.8/);
+  assert.doesNotMatch(readme, /pact-skills\/tree\/v0\.2\.7/);
 });
 
 test("skill metadata and all user-facing guidance are English-only", () => {
@@ -27,8 +27,8 @@ test("skill never executes a remote installer and points to versioned packages",
   assert.doesNotMatch(skill, /\$PACT_SERVER\/install/);
   assert.doesNotMatch(guidance, /localhost|127\.0\.0\.1|0\.2\.1|api\.pact\.shhttps/);
   assert.match(skill, /Do not download or\nexecute an installer autonomously/);
-  assert.match(skill, /pact-agent#v0\.3\.0/);
-  assert.match(readme, /pact-skills\/tree\/v0\.2\.7/);
+  assert.match(skill, /pact-agent#v0\.3\.1/);
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.8/);
 });
 
 test("OTP and real-rail proof input stay in a hidden human terminal flow", () => {
@@ -69,22 +69,25 @@ test("funding, activation, deadlines, bonds, and evaluator failure match current
 test("native MPP guidance matches the bounded keychain-only CLI flow", () => {
   const guidance = skill + readme;
   assert.match(skill, /pact wallet mppx create --account buyer/);
-  assert.match(skill, /pact fund <pactId> --payer mppx --account buyer --max-amount 0\.01/);
+  assert.match(skill, /pact fund <pactId> --payer mppx --account buyer --max-amount <approved-principal-cap-USD>/);
   assert.match(skill, /paymentRails\.mpp\.solvency\.ok: true/);
   assert.match(skill, /payoutReadiness\.treasury\.mpp: true/);
   assert.match(skill, /If `\/health` or the exact pact cannot be read successfully, stop without showing/);
-  assert.match(skill, /Do not substitute the\nexample `0\.01` cap/);
+  assert.match(skill, /First derive the exact\nparty funding amount from the current pact/);
+  assert.match(skill, /The placeholder is not a default/);
   assert.match(skill, /next-command template containing `<pactId>`/);
   assert.doesNotMatch(skill, /and exact next `pact fund` command/);
-  assert.match(skill, /Tempo\nnetwork fee is not part of that principal cap/);
+  assert.match(skill, /Tempo network fee is not part of that\nprincipal cap/);
+  assert.match(skill, /worst-case\s+network fee exceeds 0\.01 USDC\.e/);
   assert.match(skill, /Do not regenerate the\nSignedCall/);
   assert.match(skill, /Never set `MPPX_PRIVATE_KEY` or `X402_PRIVATE_KEY`/);
+  assert.match(skill, /only spending path is the Pact-bound, capped/);
   assert.match(skill, /`create` makes no network request, does not run a faucet, and does not fund the/);
   assert.doesNotMatch(guidance, /agentcash|paysponge|spongewallet/i);
   assert.doesNotMatch(guidance, /MPP_BASE_URL=|MPP_API_KEY=/);
 });
 
-test("README describes the exact non-secret MCP v0.2.6 surface", () => {
-  assert.match(readme, /v0\.2\.6 exposes exactly 18 non-secret workflow tools/);
+test("README describes the exact non-secret MCP v0.2.7 surface", () => {
+  assert.match(readme, /v0\.2\.7 exposes exactly 18 non-secret workflow tools/);
   assert.match(readme, /Wallet creation, OTP\nverification, and real-rail payment remain human-confirmed terminal steps/);
 });

@@ -22,18 +22,18 @@ Installing this skill adds the Pact operating guide. It does **not** install the
 pact --version
 ```
 
-Version `0.3.0` or newer is required. If the CLI is missing or older, stop and
+Version `0.3.1` or newer is required. If the CLI is missing or older, stop and
 ask the human to install the official versioned package. Do not download or
 execute an installer autonomously. Give the human this exact command to run in
 their own terminal:
 
 ```bash
-npm install --global github:learners-superpumped/pact-agent#v0.3.0
+npm install --global github:learners-superpumped/pact-agent#v0.3.1
 pact --version
 ```
 
 Continue only after the human confirms the install and `pact --version` reports
-`0.3.0` or newer.
+`0.3.1` or newer.
 
 ## Safety boundaries
 
@@ -207,9 +207,9 @@ If any signal is missing or false, stop. Do not create a wallet or attempt an MP
 payment for that server.
 
 If `/health` or the exact pact cannot be read successfully, stop without showing,
-recommending, or running any wallet-create or fund command. Do not substitute the
-example `0.01` cap: first derive the exact party funding amount from the current
-pact, then present a cap that the human has explicitly approved for that amount.
+recommending, or running any wallet-create or fund command. First derive the exact
+party funding amount from the current pact, then present a cap that the human has
+explicitly approved for that amount.
 
 After separate, explicit confirmation to create a named OS-keychain account:
 
@@ -221,26 +221,31 @@ pact wallet mppx view --account buyer
 `create` makes no network request, does not run a faucet, and does not fund the
 address. It returns English JSON with the account name, address, OS-keychain
 storage, Tempo mainnet network, USDC.e asset and address, minimum funding amount,
-and a next-command template containing `<pactId>`. Fund that returned address with the approved
-Pact amount plus a small Tempo fee reserve in mainnet USDC.e through a separately
-approved process before attempting payment.
+and a next-command template containing `<pactId>`. Fund that returned address with
+the approved Pact amount plus a Tempo fee reserve in mainnet USDC.e through a
+separately approved process before attempting payment.
 
 Never set `MPPX_PRIVATE_KEY` or `X402_PRIVATE_KEY`; Pact rejects raw environment
-wallet keys. The wrapper exposes only mppx account `create`, `list`, and `view`.
-It does not expose key export, wallet deletion, funding, or arbitrary spending.
+wallet keys. The `pact wallet mppx` subcommand exposes only account `create`,
+`list`, and `view`; it has no key export, wallet deletion, generic funding, or
+arbitrary spending command. Its only spending path is the Pact-bound, capped
+`pact fund --payer mppx` flow below.
 
 Re-read the pact and `/health`, calculate the exact funding amount, then show the
 human this exact payment command, account, rail address, amount, and hard cap.
 After fresh confirmation for this one payment, run:
 
 ```bash
-pact fund <pactId> --payer mppx --account buyer --max-amount 0.01
+pact fund <pactId> --payer mppx --account buyer --max-amount <approved-principal-cap-USD>
 ```
 
 `--max-amount` is mandatory and is a human-readable cap on the Pact payment
-amount; `0.01` permits a Pact charge of at most 0.01 USDC.e. The separate Tempo
-network fee is not part of that principal cap, so include a small fee reserve in
-the wallet and show that possible extra cost during confirmation. The CLI binds
+amount. The placeholder is not a default: replace it only with the approved cap
+derived from this party's exact deposit plus bond. Production's current minimum
+funding amount is 0.01 USDC.e. The separate Tempo network fee is not part of that
+principal cap. The CLI independently rejects a transaction whose worst-case
+network fee exceeds 0.01 USDC.e, so include a fee reserve up to that ceiling and
+show that possible extra cost during confirmation. The CLI binds
 the active keychain address into the action-bound SignedCall, verifies the exact
 standard MPP challenge, preserves the POST URL, body, and headers for the paid
 retry, and requires a receipt bound to the same Pact and party.
