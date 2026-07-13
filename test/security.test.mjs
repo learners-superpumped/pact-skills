@@ -4,6 +4,16 @@ import test from "node:test";
 
 const skill = readFileSync(new URL("../skills/pact/SKILL.md", import.meta.url), "utf8");
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+const packageJson = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+const packageLock = JSON.parse(readFileSync(new URL("../package-lock.json", import.meta.url), "utf8"));
+
+test("release metadata and install pin are v0.2.6", () => {
+  assert.equal(packageJson.version, "0.2.6");
+  assert.equal(packageLock.version, "0.2.6");
+  assert.equal(packageLock.packages[""].version, "0.2.6");
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.6/);
+  assert.doesNotMatch(readme, /pact-skills\/tree\/v0\.2\.5/);
+});
 
 test("skill metadata and all user-facing guidance are English-only", () => {
   assert.match(skill, /^---\nname: pact\ndescription: .+\n---\n/);
@@ -18,7 +28,7 @@ test("skill never executes a remote installer and points to versioned packages",
   assert.doesNotMatch(guidance, /localhost|127\.0\.0\.1|0\.2\.1|api\.pact\.shhttps/);
   assert.match(skill, /Do not download or\nexecute an installer autonomously/);
   assert.match(skill, /pact-agent#v0\.2\.4/);
-  assert.match(readme, /pact-skills\/tree\/v0\.2\.5/);
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.6/);
 });
 
 test("OTP and real-rail proof input stay in a hidden human terminal flow", () => {
@@ -42,7 +52,7 @@ test("skill enforces untrusted-data and action-specific confirmation boundaries"
   assert.doesNotMatch(skill, /my-cancel\.json/);
 });
 
-test("funding, activation, deadlines, bonds, and evaluator failure match v0.2.3", () => {
+test("funding, activation, deadlines, bonds, and evaluator failure match current Pact semantics", () => {
   assert.match(skill, /required` party must be confirmed and\n  `minParties` must be met/);
   assert.match(skill, /Unconfirmed optional parties are dropped at the deadline/);
   assert.match(skill, /Early\n  activation additionally waits for declared open slots to be filled/);
@@ -56,7 +66,7 @@ test("funding, activation, deadlines, bonds, and evaluator failure match v0.2.3"
   assert.match(skill, /evaluator `pubkey`, `promptVersion`, `model`, `timeoutMs`, or `onFailure` differs/);
 });
 
-test("README describes the exact non-secret MCP v0.2.4 surface", () => {
-  assert.match(readme, /Pact MCP v0\.2\.4 exposes exactly 18 non-secret workflow tools/);
+test("README describes the exact non-secret MCP v0.2.5 surface", () => {
+  assert.match(readme, /Pact MCP v0\.2\.5 exposes exactly 18 non-secret workflow tools/);
   assert.match(readme, /OTP verification and\nreal-rail payment-proof entry remain human-only terminal steps/);
 });
