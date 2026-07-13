@@ -147,7 +147,8 @@ current `stateNonce` and `expiresAt`:
 
 ```bash
 : "${PACT_CANCEL_EXPIRES_AT:?set to Unix milliseconds before the current deadline}"
-pact cancel <pactId> --expires-at "$PACT_CANCEL_EXPIRES_AT" > my-cancel.json
+umask 077
+pact cancel <pactId> --expires-at "$PACT_CANCEL_EXPIRES_AT" > party-cancel-me.json
 ```
 
 Exchange only the resulting output, never the CLI config or private key. Confirm
