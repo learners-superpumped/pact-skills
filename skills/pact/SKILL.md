@@ -11,22 +11,30 @@ losing side of a dispute pays.
 
 ## Setup
 
-Check the CLI first:
+Use English for every user-facing install, access, success, failure, and next-step
+message. Report the command result that actually happened; do not claim that the CLI
+is installed or that access is granted until the verification commands below confirm it.
+
+Installing this skill adds the Pact operating guide. It does **not** install the
+`pact` CLI. Check the CLI separately:
 
 ```bash
 pact --version
 ```
 
-If missing, install from the Pact server you will trade on:
+Version `0.2.1` or newer is required. If the CLI is missing or older, install it
+from the Pact server you will trade on:
 
 ```bash
-curl -fsSL $PACT_SERVER/install | bash   # e.g. PACT_SERVER=http://localhost:8402
+PACT_SERVER="${PACT_SERVER:-https://api.pact.sh}"
+curl -fsSL "$PACT_SERVER/install" | bash
+pact --version
 ```
 
 ## Identity
 
 ```bash
-pact init --server <SERVER_URL>   # creates ~/.pact/agent.json (privkey, partyId, server)
+pact init --server "$PACT_SERVER"   # creates ~/.pact/agent.json (privkey, partyId, server)
 pact whoami
 ```
 
@@ -37,6 +45,34 @@ pact whoami
 - Set `PACT_HOME` to use a different config directory, `PACT_SERVER` to override
   the server per-invocation.
 
+## Write access
+
+Identity creation is local, but a server may require approval before that identity
+can make write calls. Always check:
+
+```bash
+pact access
+```
+
+- `{"mode":"open","status":"allowed"}`: continue immediately.
+- `{"mode":"invite","status":"allowed"}`: continue immediately.
+- `{"mode":"invite","status":"pending"}`: wait for the approval email and
+  re-run `pact access`; do not submit another OTP request.
+- `{"mode":"invite","status":"none"}` or `revoked`: request access with a real
+  contact email and a concrete one-line use case:
+
+  ```bash
+  pact request-access \
+    --email "${PACT_EMAIL:?set PACT_EMAIL}" \
+    --use-case "${PACT_USE_CASE:?set PACT_USE_CASE}"
+  pact verify "${PACT_OTP:?set PACT_OTP from the access email}"
+  ```
+
+  `verify` returns `allowed` when the email or domain was pre-approved. It returns
+  `pending` when operator approval is still required. In that case, wait for the
+  approval email and re-run `pact access`; do not attempt trades or tell the user
+  that access is complete before the status is `allowed`.
+
 ## Money
 
 All amounts are **integer strings in USDC minor units** (6 decimals):
@@ -45,7 +81,7 @@ All amounts are **integer strings in USDC minor units** (6 decimals):
 ## Core flow (1:1 job)
 
 ```bash
-pact quickstart                    # prints a spec template — edit, then:
+pact quickstart > spec.json        # save the 1:1 template, then edit it
 pact create --file spec.json       # or: echo '{...}' | pact create
 pact fund <pactId>                 # deposit your deposit+bond (402 flow, see below)
 # ... all required parties fund -> pact becomes ACTIVE, work happens ...
@@ -64,10 +100,11 @@ pact poke <pactId>                 # advance a pact whose deadline expired
 
 ### fund = 402 flow
 
-`pact fund` calls the server without payment, gets `402` plus a
-`requirement` (amount, asset, escrow payTo, rail data), pays on the pact's
-rail, and retries with the proof in `X-PAYMENT`. On the `mock` rail the proof
-is automatic. On real rails:
+`pact fund` calls the server without payment and gets `402` plus a
+`requirement` (amount, asset, escrow payTo, rail data). On the `mock` rail the
+CLI supplies the proof and retries automatically. The CLI does not execute a
+real-rail payment itself: pay through the rail first, then pass its proof when
+retrying:
 
 ```bash
 pact fund <pactId> --rail-address <yourPayoutAddress> --proof '<railProofJson>'

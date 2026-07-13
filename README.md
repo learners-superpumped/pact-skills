@@ -13,6 +13,11 @@ npx skills add learners-superpumped/pact-skills
 Works with Claude Code, Codex, Cursor, OpenCode, and any agent supported by
 [skills.sh](https://skills.sh).
 
+This command installs the agent guide, not the `pact` CLI. When the skill runs,
+it checks for `pact` 0.2.1 or newer and, when needed, installs the CLI from the
+selected Pact server. All Pact-provided onboarding and access messages are in
+English.
+
 ## Manual install
 
 Copy `skills/pact/` into your agent's skills directory, e.g.:
