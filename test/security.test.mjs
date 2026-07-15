@@ -44,10 +44,10 @@ function assertNoCjkGuidance(document) {
   assert.doesNotMatch(document, cjkGuidance);
 }
 
-test("release metadata and install pin are v0.2.9", () => {
-  assert.equal(packageJson.version, "0.2.9");
-  assert.equal(packageLock.version, "0.2.9");
-  assert.equal(packageLock.packages[""].version, "0.2.9");
+test("release metadata and install pin are v0.2.10", () => {
+  assert.equal(packageJson.version, "0.2.10");
+  assert.equal(packageLock.version, "0.2.10");
+  assert.equal(packageLock.packages[""].version, "0.2.10");
   assert.match(readme, /pact-skills\/tree\/v0\.2\.9/);
   assert.doesNotMatch(readme, /pact-skills\/tree\/v0\.2\.8/);
 });
