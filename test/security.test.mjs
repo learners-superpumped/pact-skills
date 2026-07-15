@@ -71,7 +71,7 @@ test("skill never executes a remote installer and points to versioned packages",
   assert.doesNotMatch(skill, /\$PACT_SERVER\/install/);
   assert.doesNotMatch(guidance, /localhost|127\.0\.0\.1|0\.2\.1(?:\D|$)|api\.pact\.shhttps/);
   assert.match(skill, /Do not download or\nexecute an installer autonomously/);
-  assert.match(skill, /pact-agent#v0\.3\.3/);
+  assert.match(skill, /pact-client#4396c800237d84e84c7907e1df7f5a6a54b13e01/);
   assert.match(readme, /pact-skills\/tree\/v0\.2\.10/);
 });
 

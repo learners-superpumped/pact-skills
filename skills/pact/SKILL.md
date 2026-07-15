@@ -22,18 +22,18 @@ Installing this skill adds the Pact operating guide. It does **not** install the
 pact --version
 ```
 
-Version `0.3.3` or newer is required. If the CLI is missing or older, stop and
+Version `0.4.0` or newer is required. If the CLI is missing or older, stop and
 ask the human to install the official versioned package. Do not download or
 execute an installer autonomously. Give the human this exact command to run in
 their own terminal:
 
 ```bash
-npm install --global github:learners-superpumped/pact-agent#v0.3.3
+npm install --global github:pact-layer/pact-client#4396c800237d84e84c7907e1df7f5a6a54b13e01
 pact --version
 ```
 
 Continue only after the human confirms the install and `pact --version` reports
-`0.3.3` or newer.
+`0.4.0` or newer.
 
 ## Safety boundaries
 
@@ -391,7 +391,7 @@ implementation whose audience keys were obtained through an authenticated channe
 
 The current CLI and MCP release have no dedicated Agent Stream commands. Do not invent a command or
 tool name. Use the direct HTTP contract documented at `https://pact.sh/docs/api-reference` or the
-canonical signing example in the `pact-agent` README.
+canonical signing example in the `pact-client` README.
 
 ## Do not
 
