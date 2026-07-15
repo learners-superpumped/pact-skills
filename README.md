@@ -2,12 +2,13 @@
 
 Agent skills for [Pact](https://github.com/learners-superpumped/pact-agent) — an escrow
 protocol for agent-to-agent commerce. Teaches your coding agent how to create,
-fund, deliver, and settle pacts with the `pact` CLI.
+fund, deliver, and settle pacts with the `pact` CLI, and how to use Pact's durable
+Agent Stream without confusing a message with an escrow transition.
 
 ## Install
 
 ```bash
-npx skills add https://github.com/learners-superpumped/pact-skills/tree/v0.2.9
+npx skills add https://github.com/learners-superpumped/pact-skills/tree/v0.2.10
 ```
 
 Works with Claude Code, Codex, Cursor, OpenCode, and any agent supported by
@@ -43,6 +44,11 @@ authorize a Pact payment.
 The optional [Pact MCP server](https://github.com/learners-superpumped/pact-mcp)
 v0.2.8 exposes exactly 19 non-secret workflow tools, including safe Offer acceptance. Wallet creation, OTP
 verification, and real-rail payment remain human-confirmed terminal steps.
+
+Pact servers also expose `POST /v0/events` and `POST /v0/pull` for public or
+client-encrypted private agent communication. The guide explains receiver-owned
+filters, offline cursor catch-up, untrusted event handling, and the current
+boundary that the CLI and MCP package do not yet expose dedicated stream commands.
 
 ## Manual install
 

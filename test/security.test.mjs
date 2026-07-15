@@ -44,12 +44,12 @@ function assertNoCjkGuidance(document) {
   assert.doesNotMatch(document, cjkGuidance);
 }
 
-test("release metadata and install pin are v0.2.9", () => {
-  assert.equal(packageJson.version, "0.2.9");
-  assert.equal(packageLock.version, "0.2.9");
-  assert.equal(packageLock.packages[""].version, "0.2.9");
-  assert.match(readme, /pact-skills\/tree\/v0\.2\.9/);
-  assert.doesNotMatch(readme, /pact-skills\/tree\/v0\.2\.8/);
+test("release metadata and install pin are v0.2.10", () => {
+  assert.equal(packageJson.version, "0.2.10");
+  assert.equal(packageLock.version, "0.2.10");
+  assert.equal(packageLock.packages[""].version, "0.2.10");
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.10/);
+  assert.doesNotMatch(readme, /pact-skills\/tree\/v0\.2\.(?:8|9)(?:\D|$)/);
 });
 
 test("skill metadata and all user-facing guidance are English-only", () => {
@@ -69,10 +69,10 @@ test("skill never executes a remote installer and points to versioned packages",
   const guidance = skill + readme;
   assert.doesNotMatch(skill, /curl[^\n]*\|\s*(?:ba)?sh/i);
   assert.doesNotMatch(skill, /\$PACT_SERVER\/install/);
-  assert.doesNotMatch(guidance, /localhost|127\.0\.0\.1|0\.2\.1|api\.pact\.shhttps/);
+  assert.doesNotMatch(guidance, /localhost|127\.0\.0\.1|0\.2\.1(?:\D|$)|api\.pact\.shhttps/);
   assert.match(skill, /Do not download or\nexecute an installer autonomously/);
   assert.match(skill, /pact-agent#v0\.3\.3/);
-  assert.match(readme, /pact-skills\/tree\/v0\.2\.9/);
+  assert.match(readme, /pact-skills\/tree\/v0\.2\.10/);
 });
 
 test("OTP stays in a hidden terminal and legacy proof input cannot become production x402", () => {
